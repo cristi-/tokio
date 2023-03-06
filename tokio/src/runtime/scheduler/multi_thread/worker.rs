@@ -570,7 +570,7 @@ impl Context {
 
         // If there are tasks available to steal, but this worker is not
         // looking for tasks to steal, notify another worker.
-        if !core.is_searching && core.run_queue.is_stealable() {
+        if core.run_queue.is_stealable() {
             self.worker.handle.notify_parked();
         }
 
@@ -687,7 +687,8 @@ impl Core {
             // state when the wake originates from another worker *or* a new task
             // is pushed. We do *not* want the worker to transition to "searching"
             // when it wakes when the I/O driver receives new events.
-            self.is_searching = !worker.handle.shared.idle.unpark_worker_by_id(worker.index);
+            worker.shared.idle.unpark_worker_by_id(worker.index);
+            self.is_searching = true;
             return true;
         }
 
